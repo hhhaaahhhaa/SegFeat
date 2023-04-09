@@ -94,7 +94,7 @@ def extract_features(wav_file, hparams):
                                                n_mels=hparams.rnn_input_size)
     # extract mfcc
     elif hparams.feats == 'mfcc':
-        spect = librosa.feature.mfcc(wav,
+        spect = librosa.feature.mfcc(y=wav,
                                      sr=sr,
                                      n_fft=hparams.n_fft,
                                      hop_length=hparams.hop_length,
@@ -234,15 +234,22 @@ class WavPhnDataset(Dataset):
         return None
 
     def _make_dataset(self):
-        files = []
-        wavs = list(iter_find_files(self.wav_path, "*.wav"))
-        if self.hparams.devrun:
-            wavs = wavs[:self.hparams.devrun_size]
+        cache_path = f"{self.wav_path}/cache.pickle"
+        if os.path.isfile(cache_path):
+            with open(f"{self.wav_path}/cache.pickle", 'rb') as f:
+                files = pickle.load(f)
+        else:
+            files = []
+            wavs = list(iter_find_files(self.wav_path, "*.wav"))
+            if self.hparams.devrun:
+                wavs = wavs[:self.hparams.devrun_size]
 
-        for wav in tqdm(wavs, desc="loading data into memory"):
-            res = self.process_file(wav)
-            if res is not None:
-                files.append(res)
+            for wav in tqdm(wavs, desc="loading data into memory"):
+                res = self.process_file(wav)
+                if res is not None:
+                    files.append(res)
+            with open(f"{self.wav_path}/cache.pickle", 'wb') as f:
+                pickle.dump(files, f)
 
         return files
 

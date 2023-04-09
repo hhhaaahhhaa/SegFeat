@@ -1,0 +1,8 @@
+loguru==0.4.1
+boltons==20.0.0
+pandas==1.0.0
+pytorch-lightning==1.6.2
+SoundFile==0.10.3.post1
+test-tube==0.7.5
+tqdm
+librosa
